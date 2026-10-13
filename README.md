@@ -39,11 +39,11 @@ Servicio web backend modular basado en Spring Boot 3 y Java 21, diseñado para s
 
 El servicio cuenta con un flujo de despliegue continuo automatizado hacia Azure App Service (Linux Containers):
 
-- **URL base del servicio (Azure):** `https://dosw-parcial-t2-carlossanchez.azurewebsites.net` *(reemplazar por el nombre del App Service asignado)*
+- **URL base del servicio (Azure):** `https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net`
 - **Endpoint de verificación de salud (Health Check):**  
-  [`https://dosw-parcial-t2-carlossanchez.azurewebsites.net/api/v1/health`](https://dosw-parcial-t2-carlossanchez.azurewebsites.net/api/v1/health)
+  [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/api/v1/health`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/api/v1/health)
 - **Documentación interactiva Swagger UI:**  
-  [`https://dosw-parcial-t2-carlossanchez.azurewebsites.net/swagger-ui/index.html`](https://dosw-parcial-t2-carlossanchez.azurewebsites.net/swagger-ui/index.html)
+  [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html)
 
 ---
 
