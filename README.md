@@ -21,11 +21,12 @@ Repositorio con el proyecto base, arquitectura MVC completa, configuración de s
 
 ## 1. Datos del estudiante
 
-- **Nombre completo:** Carlos Andres Sanchez Jimenez
+- **Nombre completo:** Carlos Andres Sanchez Jimenez y Juan Diego Gaitan
 - **Asignatura:** Desarrollo Orientado a Servicios Web (DOSW)
 - **Grupo:** Grupo 1
 - **Institución:** Escuela Colombiana de Ingeniería Julio Garavito
-- **Profesor agregado como colaborador al repositorio:** ✔ Confirmado
+- **Repositorio de mi compañero:** 
+- **Profesor agregado como colaborador al repositorio:**
 
 ---
 
@@ -268,3 +269,94 @@ Se cuenta con acceso y perfiles configurados en las herramientas de diseño y mo
 
 2. **Herramienta de diseño de interfaces (Figma):**  
    ![Evidencia Figma](docs/images/evidence_figma.png)
+
+
+
+# Solucion Parcial
+
+## Asignación del equipo de Producto - Definición del contrato de la API:
+* Tabla de excel en docs/office
+
+
+### ¿Cuál es la diferencia entre una validación de entrada y una validación de negocio? Seleccionen tres reglas del caso, incluyendo al menos una de cada tipo, y justifiquen su clasificación. 
+
+La diferencia principal radica en qué comprueban:
+#### Validación de entrada: Revisa la forma y estructura del dato (sintaxis). Por ejemplo, este dato es un número, un correo válido o texto sin potenciales caracteres maliciosos? Consume muy pocos recursos.
+
+Reglas identificadas en el caso:
+* Nombre nulo o vacío
+* teléfono que no tenga 10 dígitos
+* correo inválido (manejo de @gmail.com)
+* Justificacion: Todos se pueden validar solamente con la entrada, sin necesidad de consultar reglas de negocio o el estado del sistema
+
+#### Validación de negocio: Revisa el significado y las reglas de la operación. Requiere consultar el estado del sistema o la base de datos
+* El barbero debe existir
+* La fecha debe ser futura y caer en un día de disponibilidad del barbero
+* Ningún barbero con la especialidad requerida está libre en esa franja
+* Justificacion: Para validar todos se necesita consultar la base de datos, especificamente la tabla barberos
+
+### En Pedir un turno, ¿cómo debe responder la API si fallan varias condiciones? Expliquen qué error se informa y qué cambios deben evitarse.
+### Manejo de errores múltiples en "Pedir un turno"
+
+**Comportamiento de la API:**
+La cadena de validaciones se ejecuta en orden estricto (1 a 5) y el procesamiento se interrumpe de inmediato al detectar la primera inconsistencia.
+
+**Error informado:**
+Se retorna únicamente el motivo específico y el código de estado HTTP correspondiente a la primera falla encontrada en la secuencia (disponibilidad de franja, barbero disponible, datos de cliente o servicio permitido), sin evaluar ni concatenar los errores subsiguientes.
+
+**Cambios que deben evitarse:**
+* **No persistir la reserva:** No debe crearse ni guardarse ningún documento o registro de reserva en la base de datos
+* **No alterar el estado del turno:** El turno debe mantenerse en estado DISPONIBLE y bajo ningún motivo transicionar a OCUPADO
+* **Evitar cambios parciales:** Debe garantizarse la atomicidad de la transacción evitando cualquier cambio colateral en la disponibilidad de los barberos o el catálogo.
+
+## Asignación del equipo de Arquitectura - Distribución de las responsabilidades:
+Los diagramas estan en docs/uml
+
+### Preguntas para la revisión con Arquitectura:
+
+
+#### ¿Qué problemas aparecen cuando no se separan correctamente las capas? Presenten un ejemplo del caso y expliquen cómo distribuyen sus responsabilidades.
+
+
+Cuando no se delimitan las capas, la lógica de transporte HTTP, las reglas de negocio y el acceso a la base de datos terminan mezclados en un solo punto. Esto genera alto acoplamiento, impide realizar pruebas unitarias aisladas y propicia modificaciones accidentales en el estado de los datos.
+
+Por ejemplo, si el controlador realiza consultas directas a MongoDB y modifica el estado del turno a ocupado antes de comprobar que el correo termine en @gmail.com o que el teléfono tenga 10 dígitos, un error en los datos del cliente dejaría el turno bloqueado indebidamente en la base de datos.
+
+Para resolverlo, las responsabilidades se distribuyen así:
+* Controlador: gestiona peticiones HTTP, extrae la identidad del cliente desde el token y entrega la solicitud al servicio sin aplicar lógica de negocio.
+* Servicio: orquesta el caso de uso, ejecuta la cadena de validaciones en orden estricto y coordina las entidades.
+* Repositorio: maneja únicamente las consultas y la persistencia de datos.
+
+
+#### ¿Qué diferencia existe entre un validador, una utilidad y un servicio? Ubiquen un ejemplo de cada uno en su diseño e indiquen su responsabilidad.
+
+Un validador se enfoca de forma exclusiva en comprobar una condición específica y corta la ejecución si detecta un fallo, sin alterar datos ni coordinar transacciones. En este diseño, BarberoDisponibleValidator comprueba que el barbero esté libre en la franja y cuente con la especialidad requerida para los servicios solicitados.
+
+Una utilidad es una clase sin estado que provee funciones técnicas reutilizables e independientes de las reglas de negocio. Por ejemplo, JwtUtil se encarga de verificar la firma del token y extraer los datos del usuario autenticado.
+
+Un servicio es el componente central que orquesta la lógica del negocio. ReservaService se encarga de coordinar la secuencia de validaciones, asignar el barbero disponible si el cliente no indicó preferencia, cambiar el estado del turno a ocupado y guardar la reserva en la base de datos.
+
+
+#### ¿Qué diferencia existe entre el Mapper IN y el Mapper OUT? Indiquen dónde se ubican y qué representaciones transforman cada uno.
+
+
+Mapper IN se sitúa en la entrada, entre el controlador y la capa de servicio. Su propósito es convertir los datos del DTO recibido en la petición HTTP hacia los modelos o entidades de dominio, evitando que los cambios de formato del cliente afecten la estructura interna.
+
+Mapper OUT se sitúa en la salida, entre el servicio y el repositorio. Su función es transformar la entidad guardada en la base de datos hacia un DTO de respuesta estructurado para el cliente, garantizando que no se expongan datos sensibles ni detalles internos de persistencia.
+
+
+#### Retomen las tres reglas clasificadas en el paso anterior: ¿en qué componente debe ejecutarse cada una y por qué?
+
+Regla de datos del cliente:
+El nombre no puede ser vacío, el teléfono debe tener exactamente 10 dígitos numéricos y el correo debe tener dominio gmail.com. Debe procesarse en un validador de entrada en el controlador o DTO. Se ubica allí porque es una comprobación sintáctica que no requiere consultar el estado de la base de datos y debe rechazar solicitudes mal formadas antes de procesar el flujo.
+
+Regla de disponibilidad de franja:
+No pueden superarse 3 reservas en la misma fecha y hora, y debe existir un turno en estado disponible. Debe procesarse en un validador de negocio dentro de la capa de servicio. Se ubica allí porque necesita consultar las colecciones de turnos y reservas en MongoDB para validar en tiempo real.
+
+Regla de especialidad del barbero:
+El barbero debe contar con la especialidad necesaria para atender cada servicio solicitado. Debe procesarse en un validador de negocio en la capa de servicio. Se ubica allí porque requiere cruzar la lista de servicios del catálogo activo con las especialidades registradas del barbero en la base de datos.
+
+
+## Asignación del Equipo de Base de datos - Diseño de la persistencia:
+
+
