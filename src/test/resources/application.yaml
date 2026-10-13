@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: DOSW-ParcialT2-Test
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+
+server:
+  port: 8080
+
+jwt:
+  secret: dGhpc2lzYWR1bW15c2VjcmV0Zm9ydGVzdGluZ3B1cnBvc2Vzb25seTEyMzQ1Njc4OTA=
+  expiration-ms: 3600000
