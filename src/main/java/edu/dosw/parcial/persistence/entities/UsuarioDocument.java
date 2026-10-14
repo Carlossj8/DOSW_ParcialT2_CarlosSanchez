@@ -23,7 +23,7 @@ public class UsuarioDocument {
 
     private String password;
 
-    private String rol; // ADMIN, CLIENTE
+    private String rol;
 
     private String nombre;
 

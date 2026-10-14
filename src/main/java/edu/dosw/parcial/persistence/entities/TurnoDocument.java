@@ -25,9 +25,9 @@ public class TurnoDocument {
 
     private String barberoNombre;
 
-    private String fecha; // YYYY-MM-DD
+    private String fecha;
 
-    private String hora; // HH:mm
+    private String hora;
 
-    private String estado; // DISPONIBLE, OCUPADO
+    private String estado;
 }

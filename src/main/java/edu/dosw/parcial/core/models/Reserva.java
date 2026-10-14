@@ -19,6 +19,6 @@ public class Reserva {
     private String hora;
     private List<Servicio> servicios;
     private Double total;
-    private String estado; // CONFIRMADA, CANCELADA
+    private String estado;
     private Cliente cliente;
 }

@@ -19,7 +19,7 @@ public class ServicioDocument {
     private String id;
 
     @Indexed(unique = true)
-    private String codigo; // SER-001, etc.
+    private String codigo;
 
     private String nombre;
 

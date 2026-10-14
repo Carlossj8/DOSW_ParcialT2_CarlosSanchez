@@ -33,7 +33,7 @@ public class ReservaDocument {
 
     private Double total;
 
-    private String estado; // CONFIRMADA, CANCELADA
+    private String estado;
 
     private ClienteEmbebido cliente;
 

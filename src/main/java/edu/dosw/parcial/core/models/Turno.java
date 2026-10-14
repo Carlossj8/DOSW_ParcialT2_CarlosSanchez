@@ -16,5 +16,5 @@ public class Turno {
     private String barberoNombre;
     private String fecha;
     private String hora;
-    private String estado; // DISPONIBLE, OCUPADO
+    private String estado;
 }
