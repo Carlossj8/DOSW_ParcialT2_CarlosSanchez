@@ -1,6 +1,7 @@
 package edu.dosw.parcial.controller.handlers;
 
 import edu.dosw.parcial.core.utils.AuthenticationFailedException;
+import edu.dosw.parcial.core.utils.BadRequestException;
 import edu.dosw.parcial.core.utils.ConflictException;
 import edu.dosw.parcial.core.utils.ResourceNotFoundException;
 import edu.dosw.parcial.core.utils.UnprocessableEntityException;
@@ -19,6 +20,18 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
+        log.warn("Solicitud inválida (400): {}", ex.getMessage());
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Bad Request");
+        response.put("mensaje", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
