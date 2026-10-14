@@ -423,3 +423,43 @@ Riesgo 2: Identification and Authentication Failures
 El esquema más apropiado es la autenticación basada en tokens mediante JWT.
 
 Permite una arquitectura sin estado acorde con REST, evitando guardar sesiones en el servidor o consultar MongoDB en cada solicitud. El token firmado almacena el usuario y rol para validar permisos rápidamente en el filtro de seguridad.
+
+
+## 5. Asignación del Equipo de Calidad - Definir cómo comprobar el comportamiento:
+
+### Escenarios de prueba con TDD (Red, Green, Refactor)
+
+Se aplica TDD escribiendo la prueba antes del código para garantizar que falle inicialmente (Red), implementando la solución mínima (Green) y optimizando el diseño (Refactor).
+
+* Exitoso: Solicitud con turno libre, barbero disponible con la especialidad, datos de cliente válidos y servicios existentes. Comprueba respuesta HTTP 201 Created, turno en OCUPADO, reserva CONFIRMADA y cálculo correcto del total.
+* Rechazos:
+    * E01 - Franja llena: Cuarta reserva en la misma hora o turno no disponible.
+    * E02 / E100 - Barbero no disponible o sin la especialidad requerida.
+    * E03 / E07 / E08 - Cliente inválido: Nombre vacío, teléfono distinto a 10 dígitos o correo fuera de @gmail.com.
+    * E09 - Servicio inexistente en el catálogo.
+
+### Comprobación del orden estricto de la cadena
+
+* Pruebas con fallas simultáneas: Se envía una petición con múltiples errores a la vez (como franja llena y correo inválido) y se valida que la API retorne únicamente el error de la primera regla en la secuencia.
+
+### Comprobación de no creación de reserva ni modificación de turno
+
+* Comprobación en mocks: Se verifica que no se ejecuten llamadas de persistencia para Reserva ni Turno ante un rechazo.
+* Comprobación de estado: Se consulta el turno tras la prueba fallida para asegurar que permanezca en estado DISPONIBLE y que la colección de reservas no incremente su cantidad de registros.
+
+## Preguntas para la revisión con el equipo de Calidad:
+
+###  Aporte de las pruebas y alcance de las pruebas unitarias
+
+* Aporte de evidencia:
+  Las pruebas automatizadas actúan como una especificación ejecutable del contrato y de las reglas del negocio. Cada éxito demuestra que el sistema reacciona exactamente como exige el dominio ante entradas válidas y casos de error.
+
+* Qué se verifica con pruebas unitarias:
+  Aíslan componentes individuales para evaluar su lógica interna sin depender de bases de datos ni de la red:
+    * Cumplimiento estricto del orden secuencial de la cadena de validaciones y parada inmediata.
+    * Reglas de validación aisladas: formato de teléfono (10 dígitos), dominio @gmail.com, nombre no vacío y catálogo de servicios activos.
+    * Verificación de llamadas atómicas: confirmar que ante una falla jamás se invoquen métodos para guardar reservas ni alterar turnos.
+
+###  ¿Garantizan las pruebas por sí solas la ausencia de errores?
+
+No. Las pruebas demuestran la presencia de defectos conocidos, pero no certifican su ausencia total. Una suite de pruebas unitarias puede tener una cobertura del 100% y aun así no detectar problemas de concurrencia en tiempo real (condiciones de carrera al reservar el último turno), fallas de conectividad con MongoDB, configuraciones incorrectas en Azure o comportamientos imprevistos en producción provocados por escenarios de borde que no fueron diseñados en los casos de prueba.
