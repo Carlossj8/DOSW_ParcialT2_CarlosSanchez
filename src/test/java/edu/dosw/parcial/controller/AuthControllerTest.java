@@ -46,7 +46,6 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/v1/auth/login debe retornar 201 Created con token y rol")
     void login_debeRetornar201_cuandoPeticionEsValida() throws Exception {
-        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("admin@gmail.com")
                 .password("admin123")
@@ -60,7 +59,6 @@ class AuthControllerTest {
 
         when(authService.login(any(LoginRequestDTO.class))).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -73,13 +71,11 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/v1/auth/login debe retornar 400 Bad Request cuando el correo no tiene formato válido")
     void login_debeRetornar400_cuandoCorreoEsInvalido() throws Exception {
-        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("correo-no-valido")
                 .password("admin123")
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -91,13 +87,11 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/v1/auth/login debe retornar 400 Bad Request cuando la contraseña está vacía")
     void login_debeRetornar400_cuandoPasswordEstaVacio() throws Exception {
-        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("admin@gmail.com")
                 .password("")
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -108,7 +102,6 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /api/v1/auth/login debe retornar 401 Unauthorized cuando las credenciales no coinciden")
     void login_debeRetornar401_cuandoCredencialesSonErroneas() throws Exception {
-        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("admin@gmail.com")
                 .password("wrongpassword")
@@ -117,7 +110,6 @@ class AuthControllerTest {
         when(authService.login(any(LoginRequestDTO.class)))
                 .thenThrow(new AuthenticationFailedException("Usuario no existe o contraseña errónea"));
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
