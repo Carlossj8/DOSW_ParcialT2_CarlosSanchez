@@ -25,7 +25,7 @@ Repositorio con el proyecto base, arquitectura MVC completa, configuración de s
 - **Asignatura:** Desarrollo Orientado a Servicios Web (DOSW)
 - **Grupo:** Grupo 1
 - **Institución:** Escuela Colombiana de Ingeniería Julio Garavito
-- **Repositorio de mi compañero:** 
+- **Repositorio de mi compañero:** https://github.com/mamagege/DOSW_Parcial_T2_JuanGaitan
 - **Profesor agregado como colaborador al repositorio:**
 
 ---
