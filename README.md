@@ -389,3 +389,37 @@ Para solucionar las necesidades de Bobs Barber se utiliza un modelo híbrido:
 
 ### Metamodelo conceptual
 ![Metamodelo conceptual](docs/uml/metamodelo.png)
+
+
+## 4. Asignación del Equipo de Seguridad - Proteger el acceso y la información
+
+### Preguntas:
+
+#### Diferencia entre autenticación, autorización e integridad
+
+* Autenticación: Es comprobar quién es la persona que entra al sistema. En la API se aplica en el inicio de sesión, donde el usuario envía su correo y contraseña, y el sistema comprueba sus credenciales para confirmar su identidad y darle un token.
+* Autorización: Es determinar qué acciones tiene permiso de realizar un usuario ya identificado. En la API se aplica revisando el rol en cada llamada; por ejemplo, si un cliente intenta crear un turno, el sistema le niega la acción con un error 403 porque solo el administrador tiene ese permiso.
+* Integridad: Es garantizar que la información no sea alterada ni manipulada en el camino o en la base de datos. En la API se aplica asegurando que los datos viajen protegidos y que el cálculo del precio y el estado del turno se guarden de forma exacta, sin que nadie pueda cambiar los valores de la reserva por fuera de las reglas.
+
+#### Riesgos de OWASP Top 10 aplicables a la API
+
+2. Riesgos de OWASP Top 10 aplicables a la barbería
+
+Riesgo 1: Broken Access Control
+
+* Escenario en la barbería: Un cliente autenticado intenta llamar al endpoint para ver todos los turnos realizados por otros clientes, o intenta enviar un identificador ajeno para acceder a reservas que no le pertenecen.
+* Mitigación: Validar el rol del usuario en cada endpoint antes de procesar la petición y obtener la identidad del cliente directamente desde el token de sesión verificado, nunca desde parámetros enviados en la petición.
+* Verificación: Ejecutar una prueba enviando una solicitud a la ruta de ver todos los turnos usando el token de un cliente y comprobar que la API responda con código HTTP 403 impidiendo el acceso.
+
+Riesgo 2: Identification and Authentication Failures
+
+* Escenario en la barbería: El inicio de sesión permite intentos infinitos sin bloqueo, o el sistema genera tokens que no expiran nunca, lo que facilita que un atacante adivine contraseñas predefinidas o use indefinidamente una sesión interceptada.
+* Mitigación: Generar tokens de acceso firmados con un tiempo de vida limitado y exigir credenciales seguras que impidan el uso continuo de sesiones viejas o robadas.
+* Verificación: Intentar consumir cualquier endpoint protegido usando un token con firma alterada o cuya fecha de expiración haya pasado, confirmando que la API retorne un código HTTP 401.
+
+
+#### Tipo de autenticación más adecuado para el MVP
+
+El esquema más apropiado es la autenticación basada en tokens mediante JWT.
+
+Permite una arquitectura sin estado acorde con REST, evitando guardar sesiones en el servidor o consultar MongoDB en cada solicitud. El token firmado almacena el usuario y rol para validar permisos rápidamente en el filtro de seguridad.
