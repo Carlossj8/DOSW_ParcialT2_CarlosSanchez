@@ -271,6 +271,7 @@ Se cuenta con acceso y perfiles configurados en las herramientas de diseño y mo
    ![Evidencia Figma](docs/images/evidence_figma.png)
 
 
+---
 
 # Solucion Parcial
 
@@ -357,3 +358,34 @@ No pueden superarse 3 reservas en la misma fecha y hora, y debe existir un turno
 
 Regla de especialidad del barbero:
 El barbero debe contar con la especialidad necesaria para atender cada servicio solicitado. Debe procesarse en un validador de negocio en la capa de servicio. Se ubica allí porque requiere cruzar la lista de servicios del catálogo activo con las especialidades registradas del barbero en la base de datos.
+
+
+## 3. Asignación del Equipo de Base de datos - Diseño de la persistencia:
+
+
+### Estrategia de Modelado
+Para solucionar las necesidades de Bobs Barber se utiliza un modelo híbrido:
+
+* Datos referenciados (Colecciones separadas):
+  * Barbero se almacena en su propio documento/colección independiente y se enlaza al turno mediante una referencia.
+  * Razón: El barbero tiene ciclo de vida propio; existe antes y después de los turnos, y mantiene sus horarios y especialidades fijas.
+* Datos embebidos (Subdocumentos):
+  * Servicio no cuenta con una colección separada en el agregado principal, sino que se embebe directamente dentro del documento Turno.
+  * Razón: Guarda una "foto" del servicio solicitado (nombre y precio cobrado) al momento de apartar el turno, garantizando integridad ante futuros posibles cambios de tarifas.
+
+
+### Análisis de Consultas, Actualizaciones y Crecimiento
+
+* Consultas y lecturas rápidas: Consultar las reservas o turnos es directo; basta con buscar en la colección de reservas filtrando por el ID del cliente o la fecha, trayendo toda la información sin necesidad de cruzar tablas.
+* Actualización segura: Cambiar el estado de un turno (de DISPONIBLE a OCUPADO) ocurre en un único documento, lo que garantiza que no se pisen reservas simultáneas.
+* Duplicación controlada: Al embeber los datos del servicio se genera una duplicación controlada que evita que modificaciones futuras en las tarifas alteren registros pasados.
+* Control de crecimiento: El tamaño del documento está delimitado. Cada reserva contiene únicamente los servicios de esa cita específica, evitando documentos pesados o lentos.
+
+
+### Ventaja y Desventaja de la Elección
+
+* Ventaja: Velocidad y simplicidad en las consultas. Al momento de consultar las reservas o turnos, la API obtiene todos los datos necesarios en una sola lectura, sin hacer combinaciones costosas de datos.
+* Desventaja: Redundancia de datos. Si un dato maestro cambia (por ejemplo, el nombre de un barbero), los registros de turnos antiguos conservarán el nombre anterior a menos que se actualicen manualmente.
+
+### Metamodelo conceptual
+![Metamodelo conceptual](docs/uml/metamodelo.png)
