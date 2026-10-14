@@ -314,9 +314,9 @@ Se retorna únicamente el motivo específico y el código de estado HTTP corresp
 ### Diagrama de componentes general
 ![Diagrama de componentes general ](docs/uml/componentesGeneral.png)
 ### Diagrama de componentes especifico
-![Diagrama de componentes específico siguiendo el esquema de MVC. ](docs/uml/componentesEspecifico.png)
+![Diagrama de componentes específico siguiendo el esquema de MVC. ](docs/uml/DiagramaEspecifico.png)
 ### Diagrama de clases
-![Diagrama de clases: modelos de dominio ](docs/uml/Clases.png)
+![Diagrama de clases: modelos de dominio ](docs/uml/DiagramadeClasesPatrones.png)
 
 ### Preguntas para la revisión con Arquitectura:
 
