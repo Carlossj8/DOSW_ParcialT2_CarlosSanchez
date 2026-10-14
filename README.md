@@ -311,8 +311,11 @@ Se retorna únicamente el motivo específico y el código de estado HTTP corresp
 * **Evitar cambios parciales:** Debe garantizarse la atomicidad de la transacción evitando cualquier cambio colateral en la disponibilidad de los barberos o el catálogo.
 
 ## 2. Asignación del equipo de Arquitectura - Distribución de las responsabilidades:
+### Diagrama de componentes general
 ![Diagrama de componentes general ](docs/uml/componentesGeneral.png)
+### Diagrama de componentes especifico
 ![Diagrama de componentes específico siguiendo el esquema de MVC. ](docs/uml/componentesEspecifico.png)
+### Diagrama de clases
 ![Diagrama de clases: modelos de dominio ](docs/uml/Clases.png)
 
 ### Preguntas para la revisión con Arquitectura:
@@ -463,3 +466,37 @@ Se aplica TDD escribiendo la prueba antes del código para garantizar que falle 
 ###  ¿Garantizan las pruebas por sí solas la ausencia de errores?
 
 No. Las pruebas demuestran la presencia de defectos conocidos, pero no certifican su ausencia total. Una suite de pruebas unitarias puede tener una cobertura del 100% y aun así no detectar problemas de concurrencia en tiempo real (condiciones de carrera al reservar el último turno), fallas de conectividad con MongoDB, configuraciones incorrectas en Azure o comportamientos imprevistos en producción provocados por escenarios de borde que no fueron diseñados en los casos de prueba.
+
+## Asignación del Equipo de Devops - Definir cómo comprobar el comportamiento:
+
+
+###  Etapas principales de un pipeline CI/CD
+
+* Compilación / Build: Compila el código fuente y descarga las dependencias para comprobar la integridad del proyecto.
+* Test: Ejecuta pruebas unitarias e integración para validar que la lógica de negocio y los contratos no presenten regresiones.
+* Análisis de calidad y seguridad: Evalúa métricas con herramientas como SonarQube para revisar cobertura de código, vulnerabilidades y deuda técnica.
+* Despliegue / Deploy: Publica automáticamente el contenedor en el entorno de destino (QA o Producción en Azure App Service).
+
+###  Comportamiento ante fallo de pruebas
+
+* Acción del pipeline: Se detiene inmediatamente y marca la ejecución como fallida.
+* ¿Debe permitirse el despliegue?: No.
+* Justificación: Desplegar con pruebas rotas rompe el principio de entrega continua, introduciendo bugs o inconsistencias conocidas en los ambientes de prueba o producción.
+
+###  Propósito de los logs e investigación de fallos
+
+* Propósito: Registrar eventos del sistema en tiempo real para facilitar auditoría, monitoreo y diagnóstico de incidentes.
+* Reserva fallida: Se registra el identificador, la fecha y hora del intento, el motivo exacto del rechazo según la cadena de validación y el estado previo del turno.
+* Error de autenticación: Se registra la fecha y hora, la dirección IP de origen, el correo intentado y el motivo del fallo (credencial incorrecta o token expirado).
+
+###  Información para rastrear y datos que no deberian registrarse
+
+* Información útil: IDs de transacción, método y ruta HTTP consumida, identificador de usuario autenticado, códigos de respuesta y tiempos de ejecución.
+* Datos que no deben registrarse: Contraseñas en texto plano, tokens JWT completos, números de tarjetas de crédito o información personal sensible de clientes.
+
+###  Diferencia entre log interno y mensaje al cliente
+
+* Log interno: Contiene detalles técnicos profundos, trazas completas de error (stacktraces), variables de contexto y estados de la base de datos para análisis del equipo de desarrollo.
+* Mensaje al cliente: Es una respuesta simple, amigable y estructurada (HTTP 4xx/5xx con motivo puntual), diseñada para no exponer detalles de arquitectura interna o vulnerabilidades de seguridad.
+
+![Diagrama de despliegue](docs/uml/diagramaDespliegue.png)
