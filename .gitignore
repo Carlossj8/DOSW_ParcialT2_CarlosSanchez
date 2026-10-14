@@ -46,3 +46,6 @@ Thumbs.db
 *.key
 *.pem
 *.jks
+
+# Parcial
+docs/office/DOSW_Parcial_Corte2_Rojo.docx
