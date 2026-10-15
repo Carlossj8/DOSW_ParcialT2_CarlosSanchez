@@ -69,6 +69,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe crear turno exitosamente cuando los datos son válidos")
     void crearTurno_debeRetornarTurnoCreado_cuandoDatosSonValidos() {
+        // Arrange
         LocalDate fechaFutura = LocalDate.now().plusWeeks(1);
         while (fechaFutura.getDayOfWeek().getValue() != 1) {
             fechaFutura = fechaFutura.plusDays(1);
@@ -105,8 +106,10 @@ class TurnoServiceTest {
         when(turnoRepository.count()).thenReturn(0L);
         when(turnoRepository.save(any(TurnoDocument.class))).thenReturn(turnoGuardado);
 
+        // Act
         TurnoResponseDTO response = turnoService.crearTurno(request);
 
+        // Assert
         assertNotNull(response);
         assertEquals("T01", response.getTurnoId());
         assertEquals("01", response.getBarberoId());
@@ -120,6 +123,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe lanzar ResourceNotFoundException cuando el barbero no existe")
     void crearTurno_debeLanzarResourceNotFound_cuandoBarberoNoExiste() {
+        // Arrange
         TurnoRequestDTO request = TurnoRequestDTO.builder()
                 .barberoId("99")
                 .fecha("2026-11-20")
@@ -129,11 +133,13 @@ class TurnoServiceTest {
         when(barberoRepository.findById("99")).thenReturn(Optional.empty());
         when(barberoRepository.findByNombreIgnoreCase("99")).thenReturn(Optional.empty());
 
+        // Act
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
                 () -> turnoService.crearTurno(request)
         );
 
+        // Assert
         assertEquals("El barbero no existe en la base de datos", exception.getMessage());
         verify(turnoRepository, never()).save(any());
     }
@@ -141,6 +147,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe lanzar ConflictException cuando ya existe un turno en la misma fecha y hora para el barbero")
     void crearTurno_debeLanzarConflict_cuandoTurnoYaExiste() {
+        // Arrange
         LocalDate fechaFutura = LocalDate.now().plusWeeks(1);
         while (fechaFutura.getDayOfWeek().getValue() != 1) {
             fechaFutura = fechaFutura.plusDays(1);
@@ -165,11 +172,13 @@ class TurnoServiceTest {
         when(turnoRepository.findByBarberoIdAndFechaAndHora("01", fechaStr, "10:00"))
                 .thenReturn(Optional.of(TurnoDocument.builder().build()));
 
+        // Act
         ConflictException exception = assertThrows(
                 ConflictException.class,
                 () -> turnoService.crearTurno(request)
         );
 
+        // Assert
         assertEquals("Ya existe un turno publicado para este barbero en esa fecha y hora", exception.getMessage());
         verify(turnoRepository, never()).save(any());
     }
@@ -177,6 +186,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe lanzar UnprocessableEntityException cuando la fecha cae en un día no disponible para el barbero")
     void crearTurno_debeLanzarUnprocessable_cuandoDiaNoDisponible() {
+        // Arrange
         LocalDate fechaViernes = LocalDate.now().plusWeeks(1);
         while (fechaViernes.getDayOfWeek().getValue() != 5) {
             fechaViernes = fechaViernes.plusDays(1);
@@ -199,11 +209,13 @@ class TurnoServiceTest {
 
         when(barberoRepository.findById("01")).thenReturn(Optional.of(barberoDoc));
 
+        // Act
         UnprocessableEntityException exception = assertThrows(
                 UnprocessableEntityException.class,
                 () -> turnoService.crearTurno(request)
         );
 
+        // Assert
         assertEquals("Fecha fuera de los dias u horas de atención del barbero", exception.getMessage());
         verify(turnoRepository, never()).save(any());
     }
@@ -211,6 +223,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe lanzar UnprocessableEntityException cuando la hora está fuera del horario del barbero")
     void crearTurno_debeLanzarUnprocessable_cuandoHoraFueraDeHorario() {
+        // Arrange
         LocalDate fechaLunes = LocalDate.now().plusWeeks(1);
         while (fechaLunes.getDayOfWeek().getValue() != 1) {
             fechaLunes = fechaLunes.plusDays(1);
@@ -233,11 +246,13 @@ class TurnoServiceTest {
 
         when(barberoRepository.findById("01")).thenReturn(Optional.of(barberoDoc));
 
+        // Act
         UnprocessableEntityException exception = assertThrows(
                 UnprocessableEntityException.class,
                 () -> turnoService.crearTurno(request)
         );
 
+        // Assert
         assertEquals("Fecha fuera de los dias u horas de atención del barbero", exception.getMessage());
         verify(turnoRepository, never()).save(any());
     }
@@ -245,6 +260,7 @@ class TurnoServiceTest {
     @Test
     @DisplayName("Debe lanzar UnprocessableEntityException cuando la fecha es pasada")
     void crearTurno_debeLanzarUnprocessable_cuandoFechaEsPasada() {
+        // Arrange
         String fechaPasada = LocalDate.now().minusDays(1).toString();
 
         TurnoRequestDTO request = TurnoRequestDTO.builder()
@@ -263,11 +279,13 @@ class TurnoServiceTest {
 
         when(barberoRepository.findById("01")).thenReturn(Optional.of(barberoDoc));
 
+        // Act
         UnprocessableEntityException exception = assertThrows(
                 UnprocessableEntityException.class,
                 () -> turnoService.crearTurno(request)
         );
 
+        // Assert
         assertEquals("Fecha fuera de los dias u horas de atención del barbero", exception.getMessage());
         verify(turnoRepository, never()).save(any());
     }

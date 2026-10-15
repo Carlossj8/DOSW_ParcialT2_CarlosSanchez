@@ -37,12 +37,14 @@ public class AuthService {
     public LoginResponseDTO login(LoginRequestDTO request) {
         log.info("Procesando inicio de sesión para el correo: {}", request.getCorreo());
 
+        log.debug("Consultando usuario en MongoDB para correo: {}", request.getCorreo());
         Usuario usuario = usuarioRepository.findByCorreo(request.getCorreo())
                 .map(usuarioMapper::toDomain)
                 .orElse(null);
 
         authValidator.validarCredenciales(usuario, request.getPassword());
 
+        log.debug("Generando token JWT tras validación exitosa de credenciales para: {}", usuario.getCorreo());
         String token = jwtUtil.generateToken(usuario.getCorreo(), usuario.getRol());
         log.info("Autenticación exitosa para el usuario: {} con rol: {}", usuario.getCorreo(), usuario.getRol());
 

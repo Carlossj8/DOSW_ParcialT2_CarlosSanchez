@@ -63,6 +63,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("Debe autenticar exitosamente y retornar token con rol cuando las credenciales son válidas")
     void login_debeRetornarTokenYRol_cuandoCredencialesSonValidas() {
+        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("admin@gmail.com")
                 .password("admin123")
@@ -80,8 +81,10 @@ class AuthServiceTest {
         when(passwordEncoder.matches("admin123", "$2a$10$encodedPassword")).thenReturn(true);
         when(jwtUtil.generateToken("admin@gmail.com", "ADMIN")).thenReturn("jwt.token.valido");
 
+        // Act
         LoginResponseDTO response = authService.login(request);
 
+        // Assert
         assertNotNull(response);
         assertEquals("jwt.token.valido", response.getToken());
         assertEquals("ADMIN", response.getRol());
@@ -93,6 +96,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("Debe lanzar AuthenticationFailedException cuando el usuario no existe")
     void login_debeLanzarExcepcion_cuandoUsuarioNoExiste() {
+        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("inexistente@gmail.com")
                 .password("password123")
@@ -100,11 +104,13 @@ class AuthServiceTest {
 
         when(usuarioRepository.findByCorreo("inexistente@gmail.com")).thenReturn(Optional.empty());
 
+        // Act
         AuthenticationFailedException exception = assertThrows(
                 AuthenticationFailedException.class,
                 () -> authService.login(request)
         );
 
+        // Assert
         assertEquals("Usuario no existe o contraseña errónea", exception.getMessage());
         verify(jwtUtil, never()).generateToken(any(), any());
     }
@@ -112,6 +118,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("Debe lanzar AuthenticationFailedException cuando la contraseña es incorrecta")
     void login_debeLanzarExcepcion_cuandoContrasenaEsIncorrecta() {
+        // Arrange
         LoginRequestDTO request = LoginRequestDTO.builder()
                 .correo("admin@gmail.com")
                 .password("wrongpassword")
@@ -127,11 +134,13 @@ class AuthServiceTest {
         when(usuarioRepository.findByCorreo("admin@gmail.com")).thenReturn(Optional.of(usuarioDoc));
         when(passwordEncoder.matches("wrongpassword", "$2a$10$encodedPassword")).thenReturn(false);
 
+        // Act
         AuthenticationFailedException exception = assertThrows(
                 AuthenticationFailedException.class,
                 () -> authService.login(request)
         );
 
+        // Assert
         assertEquals("Usuario no existe o contraseña errónea", exception.getMessage());
         verify(jwtUtil, never()).generateToken(any(), any());
     }

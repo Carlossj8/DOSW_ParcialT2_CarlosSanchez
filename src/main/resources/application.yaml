@@ -15,3 +15,11 @@ jwt:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    edu.dosw.parcial: DEBUG
+    org.springframework.web: WARN
+    org.springframework.security: INFO
+

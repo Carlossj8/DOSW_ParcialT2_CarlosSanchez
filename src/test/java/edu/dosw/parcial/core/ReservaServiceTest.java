@@ -119,6 +119,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Debe crear la reserva con éxito cuando el cliente indica barbero preferido y todo es válido")
     void crearReserva_exitosa_conPreferenciaBarbero() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -139,8 +140,10 @@ class ReservaServiceTest {
         when(servicioRepository.findByCodigo("SER-004")).thenReturn(Optional.of(servicioBarba));
         when(reservaRepository.count()).thenReturn(0L);
 
+        // Act
         ReservaResponseDTO response = reservaService.crearReserva(request);
 
+        // Assert
         assertNotNull(response);
         assertEquals("R01", response.getIdReserva());
         assertEquals("T01", response.getIdTurno());
@@ -158,6 +161,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Debe crear la reserva con éxito asignando automáticamente barbero cuando es 'Sin preferencia'")
     void crearReserva_exitosa_sinPreferenciaBarbero() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -177,8 +181,10 @@ class ReservaServiceTest {
         when(barberoRepository.findById("03")).thenReturn(Optional.of(barberoAndres));
         when(reservaRepository.count()).thenReturn(5L);
 
+        // Act
         ReservaResponseDTO response = reservaService.crearReserva(request);
 
+        // Assert
         assertNotNull(response);
         assertEquals("R06", response.getIdReserva());
         assertEquals("T01", response.getIdTurno());
@@ -194,6 +200,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E01: Debe fallar con 409 cuando ya existen 3 reservas en esa fecha y hora")
     void crearReserva_fallaE01_franjaLlena_3Reservas() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -208,7 +215,10 @@ class ReservaServiceTest {
 
         when(reservaRepository.countByFechaAndHoraAndEstado("2026-11-12", "10:00", "CONFIRMADA")).thenReturn(3L);
 
+        // Act
         ConflictException ex = assertThrows(ConflictException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Franja horaria está llena o barbero no disponible", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -218,6 +228,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E01: Debe fallar con 409 cuando no existe ningún turno DISPONIBLE en la franja")
     void crearReserva_fallaE01_sinTurnosDisponibles() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -233,7 +244,10 @@ class ReservaServiceTest {
         when(reservaRepository.countByFechaAndHoraAndEstado("2026-11-12", "10:00", "CONFIRMADA")).thenReturn(1L);
         when(turnoRepository.findByFechaAndHoraAndEstado("2026-11-12", "10:00", "DISPONIBLE")).thenReturn(List.of());
 
+        // Act
         ConflictException ex = assertThrows(ConflictException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Franja horaria está llena o barbero no disponible", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -243,6 +257,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E02: Debe fallar con 422 cuando el barbero seleccionado no tiene la especialidad requerida")
     void crearReserva_fallaE02_especialidadIncompatible() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -270,7 +285,10 @@ class ReservaServiceTest {
         when(barberoRepository.findByNombreIgnoreCase("Miguel")).thenReturn(Optional.of(barberoMiguel));
         when(servicioRepository.findByCodigo("SER-003")).thenReturn(Optional.of(servicioCejas));
 
+        // Act
         UnprocessableEntityException ex = assertThrows(UnprocessableEntityException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Ningun barbero cubre los servicios", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -280,6 +298,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E03: Debe fallar con 400 cuando el nombre del cliente es vacío o contiene sólo espacios")
     void crearReserva_fallaE03_nombreClienteInvalido() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -298,7 +317,10 @@ class ReservaServiceTest {
         when(barberoRepository.findByNombreIgnoreCase("Andrés")).thenReturn(Optional.of(barberoAndres));
         when(servicioRepository.findByCodigo("SER-001")).thenReturn(Optional.of(servicioCorte));
 
+        // Act
         BadRequestException ex = assertThrows(BadRequestException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Formato de entrada inválido", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -308,6 +330,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E07: Debe fallar con 400 cuando el teléfono del cliente no contiene exactamente 10 dígitos numéricos")
     void crearReserva_fallaE07_telefonoClienteInvalido() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -326,7 +349,10 @@ class ReservaServiceTest {
         when(barberoRepository.findByNombreIgnoreCase("Andrés")).thenReturn(Optional.of(barberoAndres));
         when(servicioRepository.findByCodigo("SER-001")).thenReturn(Optional.of(servicioCorte));
 
+        // Act
         BadRequestException ex = assertThrows(BadRequestException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Formato de entrada inválido", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -336,6 +362,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E08: Debe fallar con 400 cuando el correo del cliente no pertenece al dominio @gmail.com")
     void crearReserva_fallaE08_correoClienteInvalido() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -354,7 +381,10 @@ class ReservaServiceTest {
         when(barberoRepository.findByNombreIgnoreCase("Andrés")).thenReturn(Optional.of(barberoAndres));
         when(servicioRepository.findByCodigo("SER-001")).thenReturn(Optional.of(servicioCorte));
 
+        // Act
         BadRequestException ex = assertThrows(BadRequestException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Formato de entrada inválido", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -364,6 +394,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("E09: Debe fallar con 404 cuando algún servicio solicitado no existe en el catálogo activo")
     void crearReserva_fallaE09_servicioInexistente() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -383,7 +414,10 @@ class ReservaServiceTest {
         when(servicioRepository.findByCodigo("SER-001")).thenReturn(Optional.of(servicioCorte));
         when(servicioRepository.findByCodigo("SER-999")).thenReturn(Optional.empty());
 
+        // Act
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Servicio inexistente en el catálogo activo", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -393,6 +427,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("Orden estricto: Con fallas simultáneas en franja y cliente, debe fallar en el paso 1 (franja)")
     void crearReserva_ordenEstricto_fallaFranjaAntesDeCliente() {
+        // Arrange
         ReservaRequestDTO request = ReservaRequestDTO.builder()
                 .fecha("2026-11-12")
                 .hora("10:00")
@@ -407,7 +442,10 @@ class ReservaServiceTest {
 
         when(reservaRepository.countByFechaAndHoraAndEstado("2026-11-12", "10:00", "CONFIRMADA")).thenReturn(3L);
 
+        // Act
         ConflictException ex = assertThrows(ConflictException.class, () -> reservaService.crearReserva(request));
+
+        // Assert
         assertEquals("Franja horaria está llena o barbero no disponible", ex.getMessage());
 
         verify(turnoRepository, never()).save(any());
@@ -417,6 +455,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("obtenerMisReservas retorna la lista de reservas mapeadas cuando el cliente tiene historial")
     void obtenerMisReservas_debeRetornarListaDeReservas() {
+        // Arrange
         String correo = "carlos.ruiz@gmail.com";
         ReservaDocument doc = ReservaDocument.builder()
                 .idReserva("R01")
@@ -443,8 +482,10 @@ class ReservaServiceTest {
 
         when(reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correo)).thenReturn(List.of(doc));
 
+        // Act
         List<ReservaResponseDTO> resultado = reservaService.obtenerMisReservas(correo);
 
+        // Assert
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
         ReservaResponseDTO res = resultado.get(0);
@@ -465,11 +506,14 @@ class ReservaServiceTest {
     @Test
     @DisplayName("obtenerMisReservas retorna lista vacía cuando el cliente no tiene reservas registradas")
     void obtenerMisReservas_debeRetornarListaVacia_cuandoNoHayReservas() {
+        // Arrange
         String correo = "cliente.nuevo@gmail.com";
         when(reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correo)).thenReturn(List.of());
 
+        // Act
         List<ReservaResponseDTO> resultado = reservaService.obtenerMisReservas(correo);
 
+        // Assert
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
     }
@@ -477,6 +521,7 @@ class ReservaServiceTest {
     @Test
     @DisplayName("obtenerTodasLasReservas retorna todas las reservas del sistema para el administrador")
     void obtenerTodasLasReservas_debeRetornarTodasLasReservas() {
+        // Arrange
         ReservaDocument doc1 = ReservaDocument.builder()
                 .idReserva("R02")
                 .idTurno("T02")
@@ -498,8 +543,10 @@ class ReservaServiceTest {
 
         when(reservaRepository.findAllByOrderByFechaDescHoraDesc()).thenReturn(List.of(doc1, doc2));
 
+        // Act
         List<ReservaResponseDTO> resultado = reservaService.obtenerTodasLasReservas();
 
+        // Assert
         assertNotNull(resultado);
         assertEquals(2, resultado.size());
         assertEquals("R02", resultado.get(0).getIdReserva());
@@ -509,10 +556,13 @@ class ReservaServiceTest {
     @Test
     @DisplayName("obtenerTodasLasReservas retorna lista vacía cuando no hay ninguna reserva en el sistema")
     void obtenerTodasLasReservas_debeRetornarListaVacia_cuandoNoHayRegistros() {
+        // Arrange
         when(reservaRepository.findAllByOrderByFechaDescHoraDesc()).thenReturn(List.of());
 
+        // Act
         List<ReservaResponseDTO> resultado = reservaService.obtenerTodasLasReservas();
 
+        // Assert
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
     }

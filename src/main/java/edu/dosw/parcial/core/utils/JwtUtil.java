@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Slf4j
 @Component
-public class JwtUtil {
+public final class JwtUtil {
 
     private final SecretKey secretKey;
     private final long expirationMs;

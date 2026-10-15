@@ -45,6 +45,7 @@ public class TurnoService {
         log.info("Iniciando creación de turno. BarberoId: {}, Fecha: {}, Hora: {}",
                 request.getBarberoId(), request.getFecha(), request.getHora());
 
+        log.debug("Buscando barbero con identificador '{}' en la base de datos", request.getBarberoId());
         Barbero barbero = barberoRepository.findById(request.getBarberoId())
                 .map(barberoEntityMapper::toDomain)
                 .orElseGet(() -> barberoRepository.findByNombreIgnoreCase(request.getBarberoId())
@@ -64,6 +65,7 @@ public class TurnoService {
                 .estado("DISPONIBLE")
                 .build();
 
+        log.debug("Guardando turno {} en base de datos para fecha {} y hora {}", turnoId, request.getFecha(), request.getHora());
         TurnoDocument documentoGuardado = turnoRepository.save(turnoEntityMapper.toDocument(turno));
         Turno turnoPersistido = turnoEntityMapper.toDomain(documentoGuardado);
 

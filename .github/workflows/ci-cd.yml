@@ -9,7 +9,7 @@ env:
 
 jobs:
   test:
-    name: 🧪 Build y Pruebas
+    name: Build y Pruebas
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
   docker:
-    name: 🐳 Construcción y Push Docker
+    name: Construccion y Push Docker
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +39,7 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:latest
 
   deploy:
-    name: 🚀 Despliegue en Azure App Service
+    name: Despliegue en Azure App Service
     needs: docker
     runs-on: ubuntu-latest
     steps:

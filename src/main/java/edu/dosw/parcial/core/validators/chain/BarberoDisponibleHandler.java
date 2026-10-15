@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j
@@ -116,11 +117,11 @@ public class BarberoDisponibleHandler extends ReservaValidationHandler {
             return especialidadesRequeridas.isEmpty();
         }
         List<String> barberoEsp = barbero.getEspecialidades().stream()
-                .map(String::toUpperCase)
+                .map(s -> s.toUpperCase(Locale.ROOT))
                 .toList();
 
         for (String req : especialidadesRequeridas) {
-            if (!barberoEsp.contains(req.toUpperCase())) {
+            if (!barberoEsp.contains(req.toUpperCase(Locale.ROOT))) {
                 return false;
             }
         }

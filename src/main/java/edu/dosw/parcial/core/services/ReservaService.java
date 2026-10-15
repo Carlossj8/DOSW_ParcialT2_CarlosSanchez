@@ -111,6 +111,7 @@ public class ReservaService {
     public List<ReservaResponseDTO> obtenerMisReservas(String correoCliente) {
         log.info("Consultando reservas del cliente: {}", correoCliente);
         List<ReservaDocument> reservas = reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correoCliente);
+        log.debug("Se encontraron {} reservas para el cliente {}", reservas.size(), correoCliente);
         return reservas.stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -119,6 +120,7 @@ public class ReservaService {
     public List<ReservaResponseDTO> obtenerTodasLasReservas() {
         log.info("Consultando todas las reservas del sistema (ADMIN)");
         List<ReservaDocument> reservas = reservaRepository.findAllByOrderByFechaDescHoraDesc();
+        log.debug("Se encontraron {} reservas totales en el sistema", reservas.size());
         return reservas.stream()
                 .map(this::mapToDTO)
                 .toList();

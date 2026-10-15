@@ -49,4 +49,5 @@ Thumbs.db
 
 # Parcial
 docs/office/DOSW_Parcial_Corte2_Rojo.docx
-contexto/
+contexto/
+spotbugs-exclude.xml

@@ -1,0 +1,44 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: bobs-barber-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=dosw_parcial
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval \"db.adminCommand('ping')\" || mongo --eval \"db.adminCommand('ping')\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - bobs-barber-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bobs-barber-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/dosw_parcial
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET:-dGhpc2lzYWR1bW15c2VjcmV0Zm9ydGVzdGluZ3B1cnBvc2Vzb25seTEyMzQ1Njc4OTA=}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - bobs-barber-net
+
+volumes:
+  mongo-data:
+
+networks:
+  bobs-barber-net:
+    driver: bridge
