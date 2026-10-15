@@ -535,7 +535,6 @@ docker compose logs -f api
 docker compose down -v
 ```
 
-*(Colocar captura de Docker Compose corriendo en `docs/images/mvp_docker_compose.png`)*  
 ![Docker Compose corriendo](docs/images/mvp_docker_compose.png)
 
 ### Ejecución de pruebas automatizadas y cobertura:
@@ -566,7 +565,6 @@ La API cuenta con niveles de logging estructurados con `@Slf4j`:
 | **CU 3: Consultar mis reservas** | `GET /api/v1/turnos/{id}` | CLIENTE | `INFO`: Consulta de reservas para el cliente autenticado según su token JWT (orden descendente). |
 | **CU 4: Consultar todas las reservas** | `GET /api/v1/turnos` | ADMIN | `INFO`: Consulta de la totalidad de reservas del sistema con cliente embebido, servicios y totales. |
 
-*(Colocar captura de pruebas funcionales y logs en `docs/images/mvp_pruebas_funcionales_logs.png`)*  
 ![Evidencias de pruebas funcionales y logs](docs/images/mvp_pruebas_funcionales_logs.png)
 
 ---
@@ -577,10 +575,8 @@ La API cuenta con niveles de logging estructurados con `@Slf4j`:
 - **Cobertura de código con JaCoCo:** **94%** de cobertura general de instrucciones, superando el límite mínimo del 80% configurado en la regla de Maven `check`.
 - **Ubicación del reporte local interactivo:** `target/site/jacoco/index.html`.
 
-*(Colocar captura del resultado de las 58 pruebas en `docs/images/mvp_test_results.png`)*  
 ![Resultado de pruebas en verde](docs/images/mvp_test_results.png)
 
-*(Colocar captura del reporte de cobertura JaCoCo al 94% en `docs/images/mvp_jacoco_report.png`)*  
 ![Reporte de cobertura JaCoCo](docs/images/mvp_jacoco_report.png)
 
 ---
@@ -595,10 +591,8 @@ La API cuenta con niveles de logging estructurados con `@Slf4j`:
   2. **Construcción y Push Docker:** Compila la imagen multi-stage y la publica en Docker Hub (`latest`).
   3. **Despliegue en Azure:** Conecta mediante Azure Credentials y actualiza la App Service automáticamente.
 
-*(Colocar captura del workflow de GitHub Actions en verde en `docs/images/mvp_github_actions.png`)*  
 ![Pipeline de CI/CD en verde](docs/images/mvp_github_actions.png)
 
-*(Colocar captura del servicio desplegado en Azure en `docs/images/mvp_azure_deployed.png`)*  
 ![Despliegue y funcionamiento en Azure](docs/images/mvp_azure_deployed.png)
 
 ---
@@ -614,5 +608,4 @@ La API cuenta con niveles de logging estructurados con `@Slf4j`:
 - **Documentación interactiva Swagger UI con OpenAPI 3:**  
   [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html)
 
-*(Colocar captura de la documentación Swagger UI interactiva con el botón Authorize en `docs/images/mvp_swagger_ui.png`)*  
 ![Documentación Swagger UI](docs/images/mvp_swagger_ui.png)
