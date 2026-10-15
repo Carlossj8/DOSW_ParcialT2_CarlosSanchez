@@ -2,7 +2,6 @@ package edu.dosw.parcial.core.validators;
 
 import edu.dosw.parcial.core.models.Usuario;
 import edu.dosw.parcial.core.utils.AuthenticationFailedException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

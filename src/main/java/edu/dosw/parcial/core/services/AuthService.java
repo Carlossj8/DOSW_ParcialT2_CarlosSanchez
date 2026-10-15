@@ -8,7 +8,6 @@ import edu.dosw.parcial.core.utils.JwtUtil;
 import edu.dosw.parcial.core.validators.AuthValidator;
 import edu.dosw.parcial.persistence.mappers.UsuarioMapper;
 import edu.dosw.parcial.persistence.repositories.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
