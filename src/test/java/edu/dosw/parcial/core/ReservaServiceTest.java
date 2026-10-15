@@ -413,4 +413,107 @@ class ReservaServiceTest {
         verify(turnoRepository, never()).save(any());
         verify(reservaRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("obtenerMisReservas retorna la lista de reservas mapeadas cuando el cliente tiene historial")
+    void obtenerMisReservas_debeRetornarListaDeReservas() {
+        String correo = "carlos.ruiz@gmail.com";
+        ReservaDocument doc = ReservaDocument.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Andrés")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(45000.0)
+                .estado("CONFIRMADA")
+                .servicios(List.of(
+                        ReservaDocument.ServicioEmbebido.builder()
+                                .codigo("SER-001")
+                                .nombre("Corte clásico")
+                                .precio(25000.0)
+                                .especialidad("CORTE")
+                                .build()
+                ))
+                .cliente(ReservaDocument.ClienteEmbebido.builder()
+                        .nombre("Carlos Ruiz")
+                        .telefono("3208872165")
+                        .correo(correo)
+                        .build())
+                .build();
+
+        when(reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correo)).thenReturn(List.of(doc));
+
+        List<ReservaResponseDTO> resultado = reservaService.obtenerMisReservas(correo);
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        ReservaResponseDTO res = resultado.get(0);
+        assertEquals("R01", res.getIdReserva());
+        assertEquals("T01", res.getIdTurno());
+        assertEquals("Andrés", res.getBarberoAsignado());
+        assertEquals("2026-11-12", res.getFecha());
+        assertEquals("10:00", res.getHora());
+        assertEquals(45000.0, res.getTotal());
+        assertEquals("CONFIRMADA", res.getEstado());
+        assertNotNull(res.getServicios());
+        assertEquals(1, res.getServicios().size());
+        assertEquals("SER-001", res.getServicios().get(0).getCodigo());
+        assertNotNull(res.getCliente());
+        assertEquals("Carlos Ruiz", res.getCliente().getNombre());
+    }
+
+    @Test
+    @DisplayName("obtenerMisReservas retorna lista vacía cuando el cliente no tiene reservas registradas")
+    void obtenerMisReservas_debeRetornarListaVacia_cuandoNoHayReservas() {
+        String correo = "cliente.nuevo@gmail.com";
+        when(reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correo)).thenReturn(List.of());
+
+        List<ReservaResponseDTO> resultado = reservaService.obtenerMisReservas(correo);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+    }
+
+    @Test
+    @DisplayName("obtenerTodasLasReservas retorna todas las reservas del sistema para el administrador")
+    void obtenerTodasLasReservas_debeRetornarTodasLasReservas() {
+        ReservaDocument doc1 = ReservaDocument.builder()
+                .idReserva("R02")
+                .idTurno("T02")
+                .barberoAsignado("Laura")
+                .fecha("2026-11-13")
+                .hora("11:00")
+                .total(15000.0)
+                .estado("CONFIRMADA")
+                .build();
+        ReservaDocument doc2 = ReservaDocument.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Miguel")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(25000.0)
+                .estado("CONFIRMADA")
+                .build();
+
+        when(reservaRepository.findAllByOrderByFechaDescHoraDesc()).thenReturn(List.of(doc1, doc2));
+
+        List<ReservaResponseDTO> resultado = reservaService.obtenerTodasLasReservas();
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.size());
+        assertEquals("R02", resultado.get(0).getIdReserva());
+        assertEquals("R01", resultado.get(1).getIdReserva());
+    }
+
+    @Test
+    @DisplayName("obtenerTodasLasReservas retorna lista vacía cuando no hay ninguna reserva en el sistema")
+    void obtenerTodasLasReservas_debeRetornarListaVacia_cuandoNoHayRegistros() {
+        when(reservaRepository.findAllByOrderByFechaDescHoraDesc()).thenReturn(List.of());
+
+        List<ReservaResponseDTO> resultado = reservaService.obtenerTodasLasReservas();
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+    }
 }

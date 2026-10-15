@@ -13,10 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -52,5 +52,42 @@ public class ReservaController {
         ReservaResponseDTO response = reservaService.crearReserva(request);
         log.info("Reserva procesada exitosamente con ID: {}", response.getIdReserva());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(
+        summary = "Ver mis reservas realizadas",
+        description = "Permite al cliente autenticado ver el historial de sus reservas. La identidad se toma directamente del token JWT.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Historial de reservas obtenido exitosamente"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas o no autenticado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos suficientes. Debe tener rol CLIENTE")
+    })
+    @GetMapping("/mis-reservas")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<ReservaResponseDTO>> obtenerMisReservas(Authentication authentication) {
+        String correo = authentication != null ? authentication.getName() : null;
+        log.info("Petición recibida en GET /api/v1/reservas/mis-reservas para cliente: {}", correo);
+        List<ReservaResponseDTO> misReservas = reservaService.obtenerMisReservas(correo);
+        return ResponseEntity.ok(misReservas);
+    }
+
+    @Operation(
+        summary = "Ver todas las reservas del sistema",
+        description = "Permite únicamente al rol ADMIN ver todas las reservas y turnos del sistema",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listado de reservas obtenido exitosamente"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas o no autenticado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos suficientes. Debe tener rol ADMIN")
+    })
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReservaResponseDTO>> obtenerTodasLasReservas() {
+        log.info("Petición recibida en GET /api/v1/reservas (ADMIN)");
+        List<ReservaResponseDTO> reservas = reservaService.obtenerTodasLasReservas();
+        return ResponseEntity.ok(reservas);
     }
 }

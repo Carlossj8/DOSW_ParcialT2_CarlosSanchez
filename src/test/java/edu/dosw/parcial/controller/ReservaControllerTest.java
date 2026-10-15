@@ -23,8 +23,10 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 @ExtendWith(MockitoExtension.class)
 class ReservaControllerTest {
@@ -184,5 +186,52 @@ class ReservaControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.status").value(422))
                 .andExpect(jsonPath("$.mensaje").value("Ningun barbero cubre los servicios"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/reservas/mis-reservas debe retornar 200 OK con el historial del cliente")
+    void obtenerMisReservas_debeRetornar200_conHistorial() throws Exception {
+        String correo = "carlos.ruiz@gmail.com";
+        ReservaResponseDTO reserva = ReservaResponseDTO.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Andrés")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(45000.0)
+                .estado("CONFIRMADA")
+                .build();
+
+        when(reservaService.obtenerMisReservas(correo)).thenReturn(List.of(reserva));
+
+        mockMvc.perform(get("/api/v1/reservas/mis-reservas")
+                        .principal(new UsernamePasswordAuthenticationToken(correo, null)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idReserva").value("R01"))
+                .andExpect(jsonPath("$[0].idTurno").value("T01"))
+                .andExpect(jsonPath("$[0].barberoAsignado").value("Andrés"))
+                .andExpect(jsonPath("$[0].total").value(45000.0));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/reservas debe retornar 200 OK con todas las reservas para ADMIN")
+    void obtenerTodasLasReservas_debeRetornar200_conListaCompleta() throws Exception {
+        ReservaResponseDTO reserva = ReservaResponseDTO.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Laura")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(18000.0)
+                .estado("CONFIRMADA")
+                .build();
+
+        when(reservaService.obtenerTodasLasReservas()).thenReturn(List.of(reserva));
+
+        mockMvc.perform(get("/api/v1/reservas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idReserva").value("R01"))
+                .andExpect(jsonPath("$[0].idTurno").value("T01"))
+                .andExpect(jsonPath("$[0].barberoAsignado").value("Laura"));
     }
 }

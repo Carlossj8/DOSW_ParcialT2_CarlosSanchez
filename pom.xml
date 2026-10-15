@@ -31,6 +31,14 @@
         <sonar.projectKey>DOSW_ParcialT2_CarlosSanchez</sonar.projectKey>
         <sonar.projectName>DOSW-ParcialT2</sonar.projectName>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>
+            **/main/**,
+            **/config/**,
+            **/dtos/**,
+            **/entities/**,
+            **/models/**,
+            **/mappers/**
+        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -157,6 +165,16 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>edu/dosw/parcial/main/**</exclude>
+                        <exclude>edu/dosw/parcial/config/**</exclude>
+                        <exclude>edu/dosw/parcial/controller/dtos/**</exclude>
+                        <exclude>edu/dosw/parcial/persistence/entities/**</exclude>
+                        <exclude>edu/dosw/parcial/core/models/**</exclude>
+                        <exclude>edu/dosw/parcial/**/mappers/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

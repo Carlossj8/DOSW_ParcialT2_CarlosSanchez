@@ -19,8 +19,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import edu.dosw.parcial.controller.dtos.response.ReservaResponseDTO;
+import edu.dosw.parcial.core.services.ReservaService;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +38,9 @@ class TurnoControllerTest {
 
     @Mock
     private TurnoService turnoService;
+
+    @Mock
+    private ReservaService reservaService;
 
     @InjectMocks
     private TurnoController turnoController;
@@ -152,5 +162,57 @@ class TurnoControllerTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.status").value(422))
                 .andExpect(jsonPath("$.mensaje").value("Fecha fuera de los dias u horas de atención del barbero"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/turnos debe retornar 200 OK con la lista de todas las reservas para ADMIN")
+    void obtenerTodosLosTurnos_debeRetornar200_conListaDeReservas() throws Exception {
+        ReservaResponseDTO reserva = ReservaResponseDTO.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Laura")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(18000.0)
+                .estado("CONFIRMADA")
+                .build();
+
+        when(reservaService.obtenerTodasLasReservas()).thenReturn(List.of(reserva));
+
+        mockMvc.perform(get("/api/v1/turnos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idReserva").value("R01"))
+                .andExpect(jsonPath("$[0].idTurno").value("T01"))
+                .andExpect(jsonPath("$[0].barberoAsignado").value("Laura"))
+                .andExpect(jsonPath("$[0].fecha").value("2026-11-12"))
+                .andExpect(jsonPath("$[0].hora").value("10:00"))
+                .andExpect(jsonPath("$[0].total").value(18000.0))
+                .andExpect(jsonPath("$[0].estado").value("CONFIRMADA"));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/turnos/{id} debe retornar 200 OK con la lista de reservas del cliente autenticado")
+    void obtenerMisTurnosPorId_debeRetornar200_conListaDeReservasDelCliente() throws Exception {
+        String correo = "carlos.ruiz@gmail.com";
+        ReservaResponseDTO reserva = ReservaResponseDTO.builder()
+                .idReserva("R01")
+                .idTurno("T01")
+                .barberoAsignado("Laura")
+                .fecha("2026-11-12")
+                .hora("10:00")
+                .total(18000.0)
+                .estado("CONFIRMADA")
+                .build();
+
+        when(reservaService.obtenerMisReservas(correo)).thenReturn(List.of(reserva));
+
+        mockMvc.perform(get("/api/v1/turnos/T01")
+                        .principal(new UsernamePasswordAuthenticationToken(correo, null)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].idReserva").value("R01"))
+                .andExpect(jsonPath("$[0].idTurno").value("T01"))
+                .andExpect(jsonPath("$[0].barberoAsignado").value("Laura"))
+                .andExpect(jsonPath("$[0].fecha").value("2026-11-12"))
+                .andExpect(jsonPath("$[0].hora").value("10:00"));
     }
 }

@@ -80,14 +80,80 @@ public class ReservaService {
 
         log.info("Reserva {} guardada exitosamente en estado CONFIRMADA para turno {}", idReserva, turno.getTurnoId());
 
+        List<ReservaResponseDTO.ServicioDTO> serviciosDTO = serviciosEmbebidos.stream()
+                .map(s -> ReservaResponseDTO.ServicioDTO.builder()
+                        .codigo(s.getCodigo())
+                        .nombre(s.getNombre())
+                        .precio(s.getPrecio())
+                        .especialidad(s.getEspecialidad())
+                        .build())
+                .toList();
+
+        ReservaResponseDTO.ClienteDTO clienteDTO = ReservaResponseDTO.ClienteDTO.builder()
+                .nombre(clienteEmbebido.getNombre())
+                .telefono(clienteEmbebido.getTelefono())
+                .correo(clienteEmbebido.getCorreo())
+                .build();
+
         return ReservaResponseDTO.builder()
                 .idReserva(idReserva)
                 .idTurno(turno.getTurnoId())
                 .barberoAsignado(context.getBarberoAsignado().getNombre())
                 .fecha(request.getFecha())
                 .hora(request.getHora())
+                .servicios(serviciosDTO)
                 .total(context.getTotal())
                 .estado("CONFIRMADA")
+                .cliente(clienteDTO)
+                .build();
+    }
+
+    public List<ReservaResponseDTO> obtenerMisReservas(String correoCliente) {
+        log.info("Consultando reservas del cliente: {}", correoCliente);
+        List<ReservaDocument> reservas = reservaRepository.findByClienteCorreoOrderByFechaDescHoraDesc(correoCliente);
+        return reservas.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    public List<ReservaResponseDTO> obtenerTodasLasReservas() {
+        log.info("Consultando todas las reservas del sistema (ADMIN)");
+        List<ReservaDocument> reservas = reservaRepository.findAllByOrderByFechaDescHoraDesc();
+        return reservas.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    private ReservaResponseDTO mapToDTO(ReservaDocument doc) {
+        List<ReservaResponseDTO.ServicioDTO> serviciosDTO = doc.getServicios() != null
+                ? doc.getServicios().stream()
+                .map(s -> ReservaResponseDTO.ServicioDTO.builder()
+                        .codigo(s.getCodigo())
+                        .nombre(s.getNombre())
+                        .precio(s.getPrecio())
+                        .especialidad(s.getEspecialidad())
+                        .build())
+                .toList()
+                : List.of();
+
+        ReservaResponseDTO.ClienteDTO clienteDTO = doc.getCliente() != null
+                ? ReservaResponseDTO.ClienteDTO.builder()
+                .nombre(doc.getCliente().getNombre())
+                .telefono(doc.getCliente().getTelefono())
+                .correo(doc.getCliente().getCorreo())
+                .build()
+                : null;
+
+        return ReservaResponseDTO.builder()
+                .idReserva(doc.getIdReserva())
+                .idTurno(doc.getIdTurno())
+                .barberoAsignado(doc.getBarberoAsignado())
+                .fecha(doc.getFecha())
+                .hora(doc.getHora())
+                .servicios(serviciosDTO)
+                .total(doc.getTotal())
+                .estado(doc.getEstado())
+                .cliente(clienteDTO)
                 .build();
     }
 }

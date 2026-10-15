@@ -1,7 +1,9 @@
 package edu.dosw.parcial.controller;
 
 import edu.dosw.parcial.controller.dtos.request.TurnoRequestDTO;
+import edu.dosw.parcial.controller.dtos.response.ReservaResponseDTO;
 import edu.dosw.parcial.controller.dtos.response.TurnoResponseDTO;
+import edu.dosw.parcial.core.services.ReservaService;
 import edu.dosw.parcial.core.services.TurnoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,10 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -25,9 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TurnoController {
 
     private final TurnoService turnoService;
+    private final ReservaService reservaService;
 
-    public TurnoController(TurnoService turnoService) {
+    public TurnoController(TurnoService turnoService, ReservaService reservaService) {
         this.turnoService = turnoService;
+        this.reservaService = reservaService;
     }
 
     @Operation(
@@ -52,5 +56,44 @@ public class TurnoController {
         TurnoResponseDTO response = turnoService.crearTurno(request);
         log.info("Turno generado con éxito con ID: {}", response.getTurnoId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(
+        summary = "Ver todos los turnos realizados",
+        description = "Permite únicamente al rol ADMIN ver todas las reservas y turnos realizados en el sistema",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listado de turnos y reservas obtenido exitosamente"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas o no autenticado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos suficientes. Debe tener rol ADMIN")
+    })
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReservaResponseDTO>> obtenerTodosLosTurnos() {
+        log.info("Petición recibida en GET /api/v1/turnos (ADMIN)");
+        List<ReservaResponseDTO> turnos = reservaService.obtenerTodasLasReservas();
+        return ResponseEntity.ok(turnos);
+    }
+
+    @Operation(
+        summary = "Ver mis turnos realizados",
+        description = "Permite al cliente autenticado ver el historial de sus reservas. La identidad se toma directamente del token JWT.",
+        security = @SecurityRequirement(name = "Bearer Authentication")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Historial de turnos obtenido exitosamente"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas o no autenticado"),
+        @ApiResponse(responseCode = "403", description = "No tiene permisos suficientes. Debe tener rol CLIENTE")
+    })
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<ReservaResponseDTO>> obtenerMisTurnosPorId(
+            @PathVariable(value = "id", required = false) String id,
+            Authentication authentication) {
+        String correo = authentication != null ? authentication.getName() : null;
+        log.info("Petición recibida en GET /api/v1/turnos/{} para cliente autenticado: {}", id, correo);
+        List<ReservaResponseDTO> misTurnos = reservaService.obtenerMisReservas(correo);
+        return ResponseEntity.ok(misTurnos);
     }
 }
