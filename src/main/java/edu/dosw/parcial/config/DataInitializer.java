@@ -16,13 +16,23 @@ import java.util.List;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final BarberoRepository barberoRepository;
     private final ServicioRepository servicioRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public DataInitializer(
+            BarberoRepository barberoRepository,
+            ServicioRepository servicioRepository,
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
+        this.barberoRepository = barberoRepository;
+        this.servicioRepository = servicioRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) {

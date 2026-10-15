@@ -20,11 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 @Tag(name = "Autenticación", description = "Endpoints de inicio de sesión y gestión de tokens JWT")
 public class AuthController {
 
     private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @Operation(summary = "Iniciar sesión", description = "Permite a administradores y clientes autenticarse y obtener un token JWT")
     @ApiResponses({

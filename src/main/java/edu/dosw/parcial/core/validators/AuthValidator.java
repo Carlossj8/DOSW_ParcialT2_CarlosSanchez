@@ -9,10 +9,13 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AuthValidator {
 
     private final PasswordEncoder passwordEncoder;
+
+    public AuthValidator(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public void validarCredenciales(Usuario usuario, String rawPassword) {
         if (usuario == null) {

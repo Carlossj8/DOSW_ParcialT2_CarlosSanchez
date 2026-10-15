@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
@@ -22,6 +21,19 @@ public class AuthService {
     private final AuthValidator authValidator;
     private final JwtUtil jwtUtil;
     private final AuthMapper authMapper;
+
+    public AuthService(
+            UsuarioRepository usuarioRepository,
+            UsuarioMapper usuarioMapper,
+            AuthValidator authValidator,
+            JwtUtil jwtUtil,
+            AuthMapper authMapper) {
+        this.usuarioRepository = usuarioRepository;
+        this.usuarioMapper = usuarioMapper;
+        this.authValidator = authValidator;
+        this.jwtUtil = jwtUtil;
+        this.authMapper = authMapper;
+    }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
         log.info("Procesando inicio de sesión para el correo: {}", request.getCorreo());
