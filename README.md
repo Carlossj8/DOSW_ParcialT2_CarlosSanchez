@@ -13,27 +13,26 @@ Repositorio con el proyecto base, arquitectura MVC completa, configuración de s
 6. [Configuración y variables de entorno](#6-configuración-y-variables-de-entorno)
 7. [Cómo ejecutar](#7-cómo-ejecutar)
 8. [Pruebas](#8-pruebas)
-9. [Docker y Docker Compose (Bono)](#9-docker-y-docker-compose-bono)
+9. [Docker](#9-docker)
 10. [CI/CD](#10-cicd)
 11. [Herramientas de modelado y diseño (evidencias)](#11-herramientas-de-modelado-y-diseño-evidencias)
-12. [Implementación y evidencias](#12-implementación-y-evidencias)
+12. [Implementación y evidencias](#implementación-y-evidencias)
 
 ---
 
 ## 1. Datos del estudiante
 
 - **Nombre completo:** Carlos Andres Sanchez Jimenez y Juan Diego Gaitan
-- **Asignatura:** Desarrollo Orientado a Servicios Web (DOSW)
+- **Asignatura:** DOSW
 - **Grupo:** Grupo 1
 - **Institución:** Escuela Colombiana de Ingeniería Julio Garavito
 - **Repositorio de mi compañero:** https://github.com/mamagege/DOSW_Parcial_T2_JuanGaitan
-- **Profesor agregado como colaborador al repositorio:**
 
 ---
 
 ## 2. Descripción del proyecto
 
-Servicio web backend modular basado en Spring Boot 3 y Java 21, diseñado para soportar la arquitectura de microservicios y APIs REST bajo el patrón Modelo-Vista-Controlador (MVC). Cuenta con integración a base de datos NoSQL MongoDB, seguridad stateless basada en tokens JWT con Spring Security, documentación viva con OpenAPI 3 / Swagger UI y empaquetamiento optimizado mediante contenedores Docker con compilación multietapa.
+Servicio web backend modular basado en Spring Boot 3 y Java 21, diseñado para soportar la arquitectura de microservicios y APIs REST bajo el patrón Modelo-Vista-Controlador (MVC). Cuenta con integración a base de datos NoSQL MongoDB, seguridad stateless basada en tokens JWT con Spring Security, documentación viva con Swagger UI y empaquetamiento optimizado mediante contenedores Docker.
 
 ---
 
@@ -125,17 +124,11 @@ DOSW_ParcialT2_CarlosSanchez/
 |---|---|---|
 | **Java JDK** | 21 (LTS) | Lenguaje base de desarrollo de la plataforma |
 | **Spring Boot** | 3.3.4 | Framework base para desarrollo rápido de microservicios |
-| **Spring Boot Starter Web** | 3.3.4 | Construcción de APIs REST y servidor embebido Tomcat |
-| **Spring Data MongoDB** | 3.3.4 | Persistencia NoSQL e interacción con MongoDB / Cosmos DB |
-| **Spring Boot Starter Validation** | 3.3.4 | Validación declarativa de DTOs con anotaciones Bean Validation |
-| **Spring Boot Starter Security** | 3.3.4 | Control de acceso, políticas de autenticación y autorización |
 | **JJWT (jjwt-api, impl, jackson)** | 0.12.3 | Generación, firmado y validación de tokens JSON Web Tokens |
 | **Springdoc OpenAPI UI** | 2.5.0 | Generación automática de especificación OpenAPI y Swagger UI |
 | **Lombok** | 1.18.x (BOM) | Reducción de código repetitivo (getters, setters, builders, @Slf4j) |
-| **MapStruct** | 1.5.5.Final | Generación de mappers de alto rendimiento en tiempo de compilación |
 | **JUnit 5 & Mockito** | 3.3.4 (Test Starter) | Pruebas unitarias de componentes y simulación de dependencias |
 | **Jacoco Maven Plugin** | 0.8.12 | Medición y reporte de cobertura de código en pruebas |
-| **SonarQube Maven Plugin** | 3.10.0.2594 | Análisis estático de calidad de código y deuda técnica |
 
 ---
 
@@ -150,7 +143,6 @@ La aplicación lee su configuración de variables de entorno del sistema o del a
 | `JWT_SECRET` | Llave secreta en Base64 para firma HMAC-SHA de tokens (mínimo 44 caracteres) | `dGhpc2lzYWR1bW15c2VjcmV0Zm9ydGVzdGluZ3B1cnBvc2Vzb25seTEyMzQ1Njc4OTA=` |
 | `WEBSITES_PORT` | Variable requerida por Azure App Service para redirigir tráfico al contenedor | `8080` |
 
-> **Nota de seguridad:** Ninguna credencial productiva, clave de acceso o secreto se versiona en el repositorio. En entornos locales se usan valores de desarrollo por defecto y en despliegue se configuran mediante Azure Application Settings y GitHub Secrets.
 
 ---
 
@@ -211,43 +203,30 @@ El informe interactivo de cobertura se genera en:
 `target/site/jacoco/index.html`
 
 ### Evidencias de pruebas:
-- **Resultado de pruebas en verde:**
+- **Resultado de pruebas en verde:** *(Colocar captura en `docs/images/test_results.png`)*  
   ![Pruebas en verde](docs/images/test_results.png)
-- **Reporte de cobertura Jacoco:**
+- **Reporte de cobertura Jacoco:** *(Colocar captura en `docs/images/jacoco_report.png`)*  
   ![Reporte Jacoco](docs/images/jacoco_report.png)
 
 ---
 
-## 9. Docker y Docker Compose (Bono)
+## 9. Docker
 
-El servicio implementa construcción multietapa con Docker y orquestación local con Docker Compose:
+El servicio implementa una construcción multietapa (*multi-stage build*) con Docker:
+1. **Fase 1 (Builder):** Utiliza `maven:3.9-eclipse-temurin-21` para descargar dependencias y compilar el archivo `.jar`.
+2. **Fase 2 (Runtime):** Utiliza `eclipse-temurin:21-jre-alpine` para obtener una imagen liviana, segura y optimizada para producción.
 
-### 9.1. Dockerfile Multi-Stage
-1. **Fase 1 Builder:** Utiliza `maven:3.9-eclipse-temurin-21` para descargar dependencias y compilar el archivo `.jar`.
-2. **Fase 2 Runtime:** Utiliza `eclipse-temurin:21-jre-alpine` para obtener una imagen liviana y optimizada para producción.
-
-### 9.2. Orquestación local con Docker Compose (Bono)
-El archivo [`docker-compose.yml`](docker-compose.yml) define dos servicios integrados sobre la red puente `bobs-barber-net`:
-- **`mongo`:** Servidor MongoDB 7.0 oficial con volumen persistente `mongo-data` y healthcheck activo mediante `mongosh`.
-- **`api`:** Servicio Spring Boot 3 compilado a partir del `Dockerfile`, configurado para iniciar únicamente tras verificar que MongoDB está saludable.
-
-#### Comandos de uso:
+### Comandos de uso:
 ```bash
-# Levantar MongoDB y la API en segundo plano
-docker compose up -d
+# Construir imagen
+docker build -t dosw-parcial:local .
 
-# Consultar estado de los contenedores
-docker compose ps
-
-# Ver logs en tiempo real de la API
-docker compose logs -f api
-
-# Detener los servicios y liberar recursos
-docker compose down -v
+# Ejecutar contenedor
+docker run -p 8080:8080 -e JWT_SECRET=dGhpc2lzYWR1bW15c2VjcmV0Zm9ydGVzdGluZ3B1cnBvc2Vzb25seTEyMzQ1Njc4OTA= dosw-parcial:local
 ```
 
-### Evidencias de Docker y Docker Compose:
-- **Contenedores corriendo y respuesta 200 en health check:**
+### Evidencias de Docker:
+- **Contenedor corriendo y respuesta 200 en health:** *(Colocar captura en `docs/images/docker_running.png`)*  
   ![Contenedor corriendo](docs/images/docker_running.png)
 
 ---
@@ -263,13 +242,13 @@ El pipeline de integración y despliegue continuo está definido en [`.github/wo
 
 ### Secrets requeridos en GitHub Repository Settings:
 - `DOCKERHUB_USERNAME`: Usuario de cuenta en Docker Hub.
-- `DOCKERHUB_TOKEN`: Personal Access Token generado en Docker Hub con permisos de lectura y escritura.
+- `DOCKERHUB_TOKEN`: Personal Access Token generado en Docker Hub (Read/Write).
 - `AZURE_CREDENTIALS`: JSON del Service Principal generado con Azure CLI.
 - `AZURE_WEBAPP_NAME`: Nombre del recurso App Service en Azure.
 - `JWT_SECRET`: Llave secreta en Base64 utilizada para pruebas y ejecución.
 
 ### Evidencias del pipeline:
-- **Workflow de GitHub Actions completado en verde:**
+- **Workflow de GitHub Actions completado en verde:** *(Colocar captura en `docs/images/github_actions_green.png`)*  
   ![Pipeline en verde](docs/images/github_actions_green.png)
 
 ---
@@ -290,7 +269,7 @@ Se cuenta con acceso y perfiles configurados en las herramientas de diseño y mo
 # Solucion Parcial
 
 ## 1. Asignación del equipo de Producto - Definición del contrato de la API:
-* Contrato de la API definido en [docs/office/ApiTabla_BobsBarbery.xlsx](docs/office/ApiTabla_BobsBarbery.xlsx)
+* Tabla de excel en docs/office
 
 
 ### ¿Cuál es la diferencia entre una validación de entrada y una validación de negocio? Seleccionen tres reglas del caso, incluyendo al menos una de cada tipo, y justifiquen su clasificación. 
@@ -517,140 +496,123 @@ No. Las pruebas demuestran la presencia de defectos conocidos, pero no certifica
 
 ---
 
-# 12. Implementación y evidencias
+# Implementación y evidencias
 
-### 12.1. Bono: Docker Compose (API + MongoDB local)
+## 1. Instrucciones para ejecutar la aplicación y las pruebas
 
-El archivo [`docker-compose.yml`](docker-compose.yml) levanta la base de datos MongoDB 7.0 y la API en contenedores locales:
+### Variables de entorno requeridas (sin valores sensibles):
+| Variable de Entorno | Tipo | Descripción |
+| :--- | :---: | :--- |
+| `MONGODB_URI` | Obligatoria | Cadena de conexión para MongoDB (local o Azure Cosmos DB/Atlas) |
+| `JWT_SECRET` | Obligatoria | Llave secreta en Base64 para la firma HMAC-SHA de los tokens JWT |
+| `PORT` | Opcional | Puerto en el que escucha el servidor Spring Boot (por defecto `8080`) |
+| `WEBSITES_PORT` | Opcional | Puerto requerido por Azure App Service para redirigir tráfico al contenedor |
 
-* **Servicio `mongo`:** Imagen oficial `mongo:7.0`, puerto `27017:27017`, base de datos `dosw_parcial`, volumen `mongo-data` y healthcheck con `mongosh`.
-* **Servicio `api`:** Construcción multi-stage con OpenJDK 21 y Alpine JRE, puerto `8080:8080`, conectado a la red `bobs-barber-net` y dependiente de que MongoDB esté saludable.
+### Ejecución local con Maven:
+1. Asegurar tener una instancia de MongoDB activa en el puerto 27017 o configurar `MONGODB_URI`.
+2. Compilar e iniciar la aplicación:
+   ```bash
+   mvn clean compile
+   mvn spring-boot:run
+   ```
+3. Comprobar el servicio local:
+   - Health Check: [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)
+   - Swagger UI: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-#### Comandos de ejecución:
+### Bono: Ejecución orquestada con Docker Compose (API + MongoDB local):
+Se incluye el archivo [`docker-compose.yml`](docker-compose.yml) para levantar todo el stack local con un solo comando:
 ```bash
-# Levantar MongoDB y la API
+# Iniciar MongoDB y la API en segundo plano
 docker compose up -d
 
 # Verificar estado de los contenedores
 docker compose ps
 
-# Comprobar endpoint de salud
-curl -i http://localhost:8080/api/v1/health
-
-# Ver logs de la API
+# Ver logs en tiempo real
 docker compose logs -f api
 
-# Apagar servicios y limpiar volúmenes
+# Detener los servicios y liberar volúmenes
 docker compose down -v
 ```
 
-#### Evidencia de Docker Compose:
-![Docker Compose corriendo](docs/images/docker_running.png)
+*(Colocar captura de Docker Compose corriendo en `docs/images/mvp_docker_compose.png`)*  
+![Docker Compose corriendo](docs/images/mvp_docker_compose.png)
 
----
-
-### 12.2. Instrucciones para ejecutar la aplicación y las pruebas
-
-#### Variables de entorno requeridas:
-| Variable de Entorno | Tipo | Propósito | Valor por Defecto Local |
-| :--- | :---: | :--- | :--- |
-| `MONGODB_URI` | Obligatoria | Cadena de conexión a MongoDB | `mongodb://localhost:27017/dosw_parcial` |
-| `JWT_SECRET` | Obligatoria | Clave Base64 de 256 bits para firma de tokens JWT | Llave de prueba para desarrollo local |
-| `PORT` | Opcional | Puerto en el que escucha Spring Boot | `8080` |
-| `WEBSITES_PORT` | Opcional | Puerto usado por Azure App Service | `8080` |
-
-#### Ejecución local con Maven:
+### Ejecución de pruebas automatizadas y cobertura:
 ```bash
-# Asegurar MongoDB activo en local
-docker compose up -d mongo
-
-# Compilar y arrancar la API
-mvn clean spring-boot:run
-```
-
-#### Ejecución de pruebas y calidad:
-```bash
-# Ejecutar las 58 pruebas unitarias con JUnit 5 y Mockito
+# Ejecutar la suite completa de 58 pruebas unitarias y de integración
 mvn test
 
-# Generar reporte HTML de JaCoCo
-mvn jacoco:report
-
-# Ejecutar análisis estático con SpotBugs
-mvn spotbugs:check
-
-# Verificación completa
+# Ejecutar verificación completa con empaquetado y chequeo de cobertura (>80%)
 mvn clean verify
 ```
 
 ---
 
-### 12.3. Evidencias de pruebas funcionales y logs asociados
+## 2. Evidencias de las pruebas funcionales y sus logs asociados
 
-Niveles de logging configurados en `src/main/resources/application.yaml`:
-* `DEBUG`: Trazas internas de métodos y ordenamiento de colecciones.
-* `INFO`: Peticiones recibidas, pasos de la cadena de validación, creación de turnos, confirmación de reservas y generación de tokens.
-* `WARN`: Rechazos controlados por reglas de negocio con respuestas 400, 401, 403, 404, 409 y 422.
-* `ERROR`: Errores no controlados 500 con traza de pila.
+La API cuenta con niveles de logging estructurados con `@Slf4j`:
+- **`INFO`**: Registro de entrada a cada caso de uso, transiciones exitosas (creación de turnos, confirmación de reservas atómicas, emisión de tokens JWT).
+- **`WARN`**: Registro detallado de rechazos de validación sintáctica (400) y reglas de negocio controladas (401 credenciales erróneas, 403 permisos insuficientes, 404 barbero o servicio inexistente, 409 conflicto por franja llena o turno duplicado, y 422 barberos sin especialidades requeridas o fechas inválidas).
+- **`ERROR`**: Excepciones internas no controladas (500) capturadas en `GlobalExceptionHandler`.
 
-#### Casos de uso y logs asociados:
+### Resumen de flujos funcionales y logs:
 
-| Caso de Uso | Método y Endpoint | Rol | Escenario y Logs Asociados |
+| Caso de Uso | Método y Endpoint | Rol Requerido | Comportamiento y Logs Asociados |
 | :--- | :---: | :---: | :--- |
-| **CU 5: Iniciar Sesión** | `POST /api/v1/auth/login` | Público | `INFO`: Inicio de sesión exitoso de `carlos.ruiz@gmail.com` con rol `CLIENTE`.<br>`WARN`: Credenciales inválidas 401. |
-| **CU 1: Crear Turno** | `POST /api/v1/turnos` | ADMIN | `INFO`: Turno creado con ID `T01` para el barbero Miguel.<br>`WARN`: Rechazo 422 si la hora está fuera del horario del barbero.<br>`WARN`: Rechazo 409 si ya existe un turno publicado en esa franja. |
-| **CU 2: Pedir Reserva** | `POST /api/v1/reservas` | CLIENTE | `INFO`: Paso 1 superado (disponibilidad de franja).<br>`INFO`: Paso 2 superado (barbero disponible).<br>`INFO`: Paso 3 superado (datos de cliente válidos).<br>`INFO`: Paso 4 superado (servicios activos).<br>`INFO`: Paso 5 superado (asignación automática y cálculo de total).<br>`INFO`: Reserva `R02` guardada en estado `CONFIRMADA` y turno marcado como `OCUPADO`.<br>`WARN`: Rechazo en paso 1 ante turno ya ocupado con respuesta 409 Conflict. |
-| **CU 3: Consultar mis reservas** | `GET /api/v1/reservas/mis-reservas` | CLIENTE | `INFO`: Consulta de reservas para el cliente autenticado en el token JWT.<br>`DEBUG`: Retorno de reservas ordenadas por fecha y hora descendente. |
-| **CU 4: Consultar todas las reservas** | `GET /api/v1/reservas` | ADMIN | `INFO`: Consulta consolidada de todas las reservas del sistema.<br>`DEBUG`: Retorno de reservas ordenadas descendentemente. |
+| **CU 5: Iniciar Sesión** | `POST /api/v1/auth/login` | Público | `INFO`: Autenticación exitosa y emisión de token JWT.<br>`WARN`: Fallo 401 por usuario no existente o contraseña errónea. |
+| **CU 1: Crear Turno** | `POST /api/v1/turnos` | ADMIN | `INFO`: Turno creado exitosamente con identificador `T01`.<br>`WARN`: Rechazo 422 por día/hora fuera de atención o fecha pasada; 409 por turno duplicado. |
+| **CU 2: Pedir Reserva** | `POST /api/v1/reservas` | CLIENTE | `INFO`: Ejecución y aprobación de los 5 pasos de la cadena; turno a `OCUPADO` y reserva `CONFIRMADA`.<br>`WARN`: Parada inmediata y corte atómico ante rechazo en pasos 1 a 4. |
+| **CU 3: Consultar mis reservas** | `GET /api/v1/turnos/{id}` | CLIENTE | `INFO`: Consulta de reservas para el cliente autenticado según su token JWT (orden descendente). |
+| **CU 4: Consultar todas las reservas** | `GET /api/v1/turnos` | ADMIN | `INFO`: Consulta de la totalidad de reservas del sistema con cliente embebido, servicios y totales. |
+
+*(Colocar captura de pruebas funcionales y logs en `docs/images/mvp_pruebas_funcionales_logs.png`)*  
+![Evidencias de pruebas funcionales y logs](docs/images/mvp_pruebas_funcionales_logs.png)
 
 ---
 
-### 12.4. Reportes de JaCoCo y análisis estático
+## 3. Capturas y enlaces a los reportes de JaCoCo y análisis estático
 
-#### Cobertura JaCoCo superior al 80%:
-El reporte final alcanzó un **94% de cobertura de instrucciones**:
-* `edu.dosw.parcial.controller.handlers`: 100%
-* `edu.dosw.parcial.core.utils`: 100%
-* `edu.dosw.parcial.core.services`: 99%
-* `edu.dosw.parcial.controller`: 98%
-* `edu.dosw.parcial.core.validators`: 94%
-* `edu.dosw.parcial.core.validators.chain`: 86%
+- **Suite de pruebas:** 58 pruebas automáticas pasando con 0 errores y 0 fallos (`BUILD SUCCESS`).
+- **Cobertura de código con JaCoCo:** **94%** de cobertura general de instrucciones, superando el límite mínimo del 80% configurado en la regla de Maven `check`.
+- **Ubicación del reporte local interactivo:** `target/site/jacoco/index.html`.
 
-![Reporte de Cobertura JaCoCo](docs/images/jacoco_report.png)
+*(Colocar captura del resultado de las 58 pruebas en `docs/images/mvp_test_results.png`)*  
+![Resultado de pruebas en verde](docs/images/mvp_test_results.png)
 
-#### Análisis estático con SpotBugs:
-* 0 bugs y 0 hallazgos de severidad.
-* 58 pruebas unitarias aprobadas bajo estructura Arrange, Act, Assert.
-
-![Resultado de pruebas y análisis estático](docs/images/test_results.png)
+*(Colocar captura del reporte de cobertura JaCoCo al 94% en `docs/images/mvp_jacoco_report.png`)*  
+![Reporte de cobertura JaCoCo](docs/images/mvp_jacoco_report.png)
 
 ---
 
-### 12.5. Ejecución del pipeline y despliegue en Azure
+## 4. Enlace a ejecución exitosa del pipeline y evidencia desplegada en Azure
 
-El pipeline de GitHub Actions se ejecuta con cada integración en la rama `develop`:
+- **Enlace a la ejecución exitosa del pipeline en GitHub Actions:**  
+  [https://github.com/Carlossj8/DOSW_ParcialT2_CarlosSanchez/actions/runs/38675280562](https://github.com/Carlossj8/DOSW_ParcialT2_CarlosSanchez/actions/runs/38675280562)
 
-* **Enlace a la ejecución exitosa del pipeline:**  
-  https://github.com/Carlossj8/DOSW_ParcialT2_CarlosSanchez/actions/runs/38359247193
+- **Fases del flujo continuo:**
+  1. **Build y Pruebas:** Ejecuta `mvn verify`, validando las 58 pruebas unitarias y la regla de cobertura de JaCoCo.
+  2. **Construcción y Push Docker:** Compila la imagen multi-stage y la publica en Docker Hub (`latest`).
+  3. **Despliegue en Azure:** Conecta mediante Azure Credentials y actualiza la App Service automáticamente.
 
-* **Pasos del pipeline:**
-  1. Build y Pruebas: Compilación Maven, 58 tests unitarios, JaCoCo check y SpotBugs check.
-  2. Construcción y Push Docker: Generación de imagen multi-stage y publicación en Docker Hub.
-  3. Despliegue en Azure App Service: Autenticación con Azure y actualización del contenedor en producción.
+*(Colocar captura del workflow de GitHub Actions en verde en `docs/images/mvp_github_actions.png`)*  
+![Pipeline de CI/CD en verde](docs/images/mvp_github_actions.png)
 
-![Pipeline de GitHub Actions en verde](docs/images/github_actions_green.png)
+*(Colocar captura del servicio desplegado en Azure en `docs/images/mvp_azure_deployed.png`)*  
+![Despliegue y funcionamiento en Azure](docs/images/mvp_azure_deployed.png)
 
 ---
 
-### 12.6. Enlaces de acceso a la aplicación y Swagger UI
+## 5. Enlaces de acceso a la aplicación y documentación Swagger
 
-* **URL base en Azure:**  
-  https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net
+- **URL base de la aplicación (Azure):**  
+  [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net)
 
-* **Endpoint de verificación de salud:**  
-  https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/api/v1/health
+- **Endpoint de verificación de salud (Health Check):**  
+  [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/api/v1/health`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/api/v1/health)
 
-* **Documentación Swagger UI:**  
-  https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html
+- **Documentación interactiva Swagger UI con OpenAPI 3:**  
+  [`https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html`](https://dosw-parcial-t2-carlossanchez-c5fahsaphggpe6dv.chilecentral-01.azurewebsites.net/swagger-ui/index.html)
 
-
+*(Colocar captura de la documentación Swagger UI interactiva con el botón Authorize en `docs/images/mvp_swagger_ui.png`)*  
+![Documentación Swagger UI](docs/images/mvp_swagger_ui.png)
